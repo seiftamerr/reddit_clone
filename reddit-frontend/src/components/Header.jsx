@@ -1,7 +1,7 @@
 import React from "react";
 import "./Header.css";
 
-const Header = ({ onLoginClick, onLogoClick, onUserClick, isLoggedIn }) => {
+const Header = ({ onLoginClick, onLogoClick, isLoggedIn }) => {
   return (
     <header className="header">
       <div className="header-left">
@@ -11,18 +11,16 @@ const Header = ({ onLoginClick, onLogoClick, onUserClick, isLoggedIn }) => {
       </div>
 
       <div className="header-center">
-        <input 
-          type="text" 
-          placeholder="Search posts or communities..." 
+        <input
+          type="text"
+          placeholder="Search posts or communities..."
           className="search-input"
         />
       </div>
 
       <div className="header-right">
         {isLoggedIn ? (
-          <button className="user-btn" onClick={onUserClick}>
-            User
-          </button>
+          <button className="user-btn">User</button>
         ) : (
           <button className="login-btn" onClick={onLoginClick}>
             Login

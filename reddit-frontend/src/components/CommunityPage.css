@@ -1,0 +1,55 @@
+.page {
+  padding: 20px;
+  margin-left: 260px;
+}
+
+.page h2 {
+  font-size: 26px;
+  margin-bottom: 10px;
+}
+
+.page > button {
+  margin-right: 10px;
+}
+
+.page button {
+  padding: 10px 15px;
+  background-color: #ff4500;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.15s;
+}
+
+.page button:hover {
+  background-color: #e03d00;
+}
+
+.page p {
+  margin: 10px 0;
+  color: #555;
+}
+
+.post {
+  background: white;
+  padding: 15px;
+  margin-top: 15px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.post h4 {
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+.post p {
+  margin-bottom: 6px;
+}
+
+.post span {
+  font-size: 14px;
+  color: #777;
+}

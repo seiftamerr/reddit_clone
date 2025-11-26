@@ -1,0 +1,36 @@
+.page {
+  padding: 20px;
+  margin-left: 260px;
+}
+
+.page h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.page input,
+.page textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+.page textarea {
+  height: 180px;
+}
+
+.page button {
+  background-color: #ff4500;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+}
+
+.page button:hover {
+  background-color: #e03d00;
+}

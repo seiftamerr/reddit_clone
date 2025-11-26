@@ -1,43 +1,41 @@
 .sidebar {
-  width: 250px;
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border-radius: 0 8px 8px 0;
-  box-shadow: 1px 0 4px rgba(0, 0, 0, 0.1);
+  width: 240px;
+  background: #ffffff;
+  padding: 20px;
+  height: calc(100vh - 60px); /* space under header */
+  border-right: 1px solid #ddd;
   position: fixed;
-  top: 70px; /* slightly below header to prevent overlap */
+  top: 60px;
   left: 0;
-  height: calc(100vh - 70px); /* full height minus header */
   overflow-y: auto;
-  box-sizing: border-box; /* ensures padding doesn’t add extra height */
+  box-sizing: border-box;
 }
 
 .sidebar-section {
-  margin-bottom: 2rem;
+  margin-bottom: 25px;
 }
 
 .sidebar-section-title {
-  font-size: 1rem;
-  font-weight: bold;
-  margin-bottom: 0.75rem;
+  font-size: 17px;
+  margin-bottom: 10px;
   color: #333;
+  font-weight: 600;
 }
 
 .sidebar-btn {
   display: block;
   width: 100%;
-  text-align: left;
-  padding: 0.5rem 1rem;
-  margin-bottom: 0.5rem;
-  border: none;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: white;
+  border: 1px solid #ddd;
   border-radius: 6px;
-  background-color: #fff;
+  font-size: 14.5px;
   cursor: pointer;
-  font-size: 0.95rem;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: 0.15s ease;
+  text-align: left;
 }
 
 .sidebar-btn:hover {
-  background-color: #e2e6ea;
-  transform: translateX(3px);
+  background: #f2f2f2;
 }

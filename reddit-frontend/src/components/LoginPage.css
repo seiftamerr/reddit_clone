@@ -1,46 +1,49 @@
-/* PAGE BACKGROUND */
+/* Make login box aligned with sidebar and header */
 .login-container {
-  min-height: 100vh;
-  background: #0f0f10;
+  min-height: calc(100vh - 60px); /* header height */
+  margin-top: 60px; /* below header */
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 20px;
+  align-items: flex-start; /* align at top */
+  padding: 3rem; /* spacing from top and sides */
+  background: #101112;
+  box-sizing: border-box;
 }
 
-/* MAIN BOX */
+/* Login box */
 .login-box {
   background: #1a1a1d;
-  padding: 35px;
-  color: white;
+  padding: 35px 30px;
   width: 100%;
-  max-width: 380px;
-  border-radius: 20px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  max-width: 400px;
+  border-radius: 16px;
+  color: white;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
 }
 
-/* TITLE */
+/* Title */
 .login-title {
-  text-align: center;
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 30px;
+  font-weight: bold;
   margin-bottom: 20px;
+  text-align: center;
 }
 
-/* SUBTEXT */
+/* Subtext */
 .login-text {
+  color: #b9b9b9;
+  font-size: 14px;
+  margin-bottom: 20px;
   text-align: center;
-  color: #cccccc;
-  font-size: 13px;
-  margin-bottom: 25px;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .link {
-  color: #4da6ff;
+  color: #ff4500;
+  cursor: pointer;
 }
 
-/* SOCIAL BUTTONS */
+/* Social buttons */
 .button-group {
   display: flex;
   flex-direction: column;
@@ -48,17 +51,20 @@
 }
 
 .login-btn {
-  width: 100%;
-  padding: 10px;
-  background: white;
-  color: #1a1a1d;
-  font-weight: bold;
-  border: none;
+  padding: 12px;
+  background: #ffffff;
+  color: #222;
   border-radius: 25px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
-/* DIVIDER */
+.login-btn:hover {
+  background: #e7e7e7;
+}
+
+/* Divider */
 .divider {
   display: flex;
   align-items: center;
@@ -66,8 +72,8 @@
 }
 
 .line {
-  flex: 1;
   height: 1px;
+  flex: 1;
   background: #555;
 }
 
@@ -77,57 +83,54 @@
   font-size: 12px;
 }
 
-/* FORM INPUTS */
+/* Form inputs */
 .form-fields {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 16px;
 }
 
 .input-field {
-  background: #2a2a2e;
-  border: 1px solid #444;
+  background: #2b2b2e;
   padding: 12px;
-  color: white;
+  border: 1px solid #444;
   border-radius: 8px;
+  color: white;
+  font-size: 15px;
 }
 
 .input-field::placeholder {
   color: #908f8f;
 }
 
-/* FORGOT PASSWORD */
+/* Forgot password */
 .forgot-password {
   text-align: right;
   font-size: 12px;
-  color: #4da6ff;
-  margin-top: -8px;
+  color: #69aaff;
 }
 
-/* LOGIN BUTTON */
+/* Login submit button */
 .login-submit {
-  width: 100%;
+  background: #ff4500;
   padding: 12px;
-  margin-top: 5px;
-  background: #4b4b4d;
-  color: #d6d6d6;
-  border-radius: 25px;
   border: none;
+  border-radius: 25px;
+  margin-top: 10px;
+  color: white;
+  font-weight: bold;
   cursor: pointer;
+  transition: 0.2s;
 }
 
 .login-submit:hover {
-  background: #5b5b5d;
+  background: #e03e00;
 }
 
-/* SIGNUP FOOTER */
+/* Signup text */
 .signup-text {
+  margin-top: 18px;
   text-align: center;
-  margin-top: 20px;
-  color: #aaa;
   font-size: 13px;
-}
-
-.signup-link {
-  color: #4da6ff;
+  color: #aaa;
 }
