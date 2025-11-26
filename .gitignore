@@ -1,0 +1,18 @@
+# Node modules
+node_modules/
+**/node_modules/
+
+# Env files
+.env
+**/.env
+
+# Frontend build
+reddit-frontend/build/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db

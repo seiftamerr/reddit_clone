@@ -1,0 +1,68 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* vertical centering */
+  padding: 0 2rem; /* horizontal padding only */
+  background-color: #ff4500;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px; /* fixed height */
+  z-index: 1000;
+  box-sizing: border-box; /* include padding in height */
+}
+
+.header-left .logo {
+  font-size: 1.3rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center; /* vertically center the text */
+  height: 100%; /* fill header height */
+  white-space: nowrap; /* prevent wrapping */
+  margin: 0; /* remove default h1 margin */
+}
+
+.header-center .search-input {
+  width: 300px;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  border: none;
+  outline: none;
+}
+
+.header-right button {
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.user-btn {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+  background-color: white;
+  color: #ff4500;
+  transition: all 0.2s;
+}
+
+.user-btn:hover {
+  background-color: #ffe6e0;
+  transform: scale(1.05);
+}
