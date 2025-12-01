@@ -24,7 +24,7 @@ const CreatePostPage = ({ community, onCreate }) => {
 
       <button
         onClick={() =>
-          title && content && onCreate(community.id, title, content)
+          title && content && onCreate(community._id, title, content)
         }
       >
         Post

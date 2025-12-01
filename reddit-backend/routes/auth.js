@@ -116,5 +116,34 @@ router.get("/me", async (req, res) => {
     res.status(400).json({ error: "Invalid token" });
   }
 });
+// UPDATE BIO
+router.put("/update-bio", async (req, res) => {
+  try {
+    const authHeader = req.header("Authorization");
+    if (!authHeader) return res.status(401).json({ error: "No token provided" });
+
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    user.bio = req.body.bio;
+    await user.save();
+
+    res.json({
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        bio: user.bio,
+        joinedCommunities: user.joinedCommunities,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 export default router;

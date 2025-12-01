@@ -1,65 +1,74 @@
-import React, { useState } from "react";
-import "./PostPage.css";
+import React, { useState, useEffect } from "react";
+import "./ProfilePage.css";
 
-const PostPage = ({ post, onBack, onVote, onAddComment }) => {
-  const [comment, setComment] = useState("");
+const ProfilePage = ({ user, posts, onSaveBio }) => {
+  if (!user) return <p>Loading profile...</p>;
 
-  if (!post) return null;
+  const [bio, setBio] = useState(user.bio || "");
+
+  // Update textarea if parent user.bio changes
+  useEffect(() => {
+    setBio(user.bio || "");
+  }, [user.bio]);
+
+  const userPosts = posts?.filter((p) => p.author === user.username) || [];
+
+  const handleSave = () => {
+    if (bio.trim() === user.bio) return; // nothing changed
+    onSaveBio(bio); // call parent
+  };
 
   return (
-    <div className="page post-page">
-      <button className="back-btn" onClick={onBack}>← Back</button>
+    <div className="page profile-page">
+      <h2>{user.username}'s Profile</h2>
 
-      <h2>{post.title}</h2>
-      <p className="post-author">Posted by u/{post.author}</p>
-
-      <p className="post-content">{post.content}</p>
-
-      {/* Voting */}
-      <div className="vote-box">
-        <button onClick={() => onVote(post.id, 1)} className="vote-btn">⬆</button>
-        <span className="vote-count">{post.votes}</span>
-        <button onClick={() => onVote(post.id, -1)} className="vote-btn">⬇</button>
-      </div>
-
-      <hr />
-
-      {/* Comment Input */}
-      <h3>Comments</h3>
-
-      <div className="comment-input-box">
+      {/* BIO SECTION */}
+      <div className="profile-section">
+        <label>Bio</label>
         <textarea
-          placeholder="Write a comment..."
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          placeholder="Write something about yourself"
         />
-
         <button
-          className="comment-submit-btn"
-          onClick={() => {
-            if (comment.trim().length > 0) {
-              onAddComment(post.id, comment);
-              setComment("");
-            }
-          }}
+          onClick={handleSave}
+          disabled={bio.trim() === user.bio}
         >
-          Comment
+          Save
         </button>
       </div>
 
-      {/* Comments List */}
-      {post.comments.length === 0 && (
-        <p className="no-comments-text">No comments yet.</p>
-      )}
+      {/* COMMUNITIES */}
+      <div className="profile-section">
+        <h3>Your Joined Communities</h3>
+        {user.joinedCommunities?.length ? (
+          <ul>
+            {user.joinedCommunities.map((name, i) => (
+              <li key={i}>r/{name}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>You haven't joined any communities yet.</p>
+        )}
+      </div>
 
-      {post.comments.map((c) => (
-        <div className="comment" key={c.id}>
-          <strong className="comment-author">u/{c.author}</strong>
-          <p className="comment-text">{c.text}</p>
-        </div>
-      ))}
+      {/* POSTS */}
+      <div className="profile-section">
+        <h3>Your Posts</h3>
+        {userPosts.length ? (
+          userPosts.map((post) => (
+            <div key={post.id} className="profile-post">
+              <h4>{post.title}</h4>
+              <p>{post.content.slice(0, 140)}...</p>
+              <span>{post.votes} votes</span>
+            </div>
+          ))
+        ) : (
+          <p>You haven't made any posts yet.</p>
+        )}
+      </div>
     </div>
   );
 };
 
-export default PostPage;
+export default ProfilePage;

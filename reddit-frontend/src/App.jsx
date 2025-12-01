@@ -20,9 +20,10 @@ function App() {
   const [user, setUser] = useState(null);
   const [communities, setCommunities] = useState([]);
 
-  // Fetch logged-in user and communities on load
+  const token = localStorage.getItem("token");
+
+  // Fetch logged-in user and communities
   useEffect(() => {
-    const token = localStorage.getItem("token");
     if (token) {
       fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -37,22 +38,31 @@ function App() {
         .catch(console.error);
     }
 
+    fetchCommunities();
+  }, []);
+
+  const fetchCommunities = () => {
     fetch(`${API_URL}/communities`)
       .then((res) => res.json())
       .then((data) => setCommunities(data))
       .catch(() => setCommunities([]));
-  }, []);
+  };
 
   const goHome = () => {
     setPage("home");
     setSelectedCommunity(null);
     setSelectedPost(null);
+    fetchCommunities();
   };
 
   const openCommunity = (community) => {
-    setSelectedCommunity(community);
-    setSelectedPost(null);
-    setPage("community");
+    fetch(`${API_URL}/communities/${community._id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setSelectedCommunity(data);
+        setSelectedPost(null);
+        setPage("community");
+      });
   };
 
   const openPost = (post) => {
@@ -71,106 +81,139 @@ function App() {
     c.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const createCommunity = (name) => {
-    const newComm = { id: Date.now(), name, members: 1, joined: true, posts: [] };
-    setCommunities([...communities, newComm]);
-    setUser({
-      ...user,
-      joinedCommunities: [...(user?.joinedCommunities || []), name],
-    });
-    setSelectedCommunity(newComm);
-    setPage("community");
-  };
-
-  const toggleMembership = (communityId) => {
-    const updated = communities.map((c) => {
-      if (c.id !== communityId) return c;
-      const isJoining = !c.joined;
-      if (isJoining) {
-        setUser({
-          ...user,
-          joinedCommunities: [...(user?.joinedCommunities || []), c.name],
-        });
-      } else {
-        setUser({
-          ...user,
-          joinedCommunities: (user?.joinedCommunities || []).filter(
-            (name) => name !== c.name
-          ),
-        });
+  // CREATE COMMUNITY
+  const createCommunity = async (name, description = "") => {
+    try {
+      const res = await fetch(`${API_URL}/communities`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name, description }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error);
+        return;
       }
-      return {
-        ...c,
-        joined: isJoining,
-        members: isJoining ? c.members + 1 : c.members - 1,
-      };
-    });
-    setCommunities(updated);
-    setSelectedCommunity(updated.find((c) => c.id === communityId));
+      setCommunities([...communities, data]);
+      setSelectedCommunity(data);
+      setPage("community");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const createPost = (communityId, title, content) => {
-    const updated = communities.map((c) => {
-      if (c.id !== communityId) return c;
-      return {
-        ...c,
-        posts: [
-          ...c.posts,
-          {
-            id: Date.now(),
-            title,
-            content,
-            author: user.username,
-            votes: 0,
-            userVote: 0,
-            comments: [],
-          },
-        ],
-      };
-    });
-    setCommunities(updated);
-    setSelectedCommunity(updated.find((c) => c.id === communityId));
-    setPage("community");
+  // JOIN / LEAVE COMMUNITY
+  const toggleMembership = async (communityId) => {
+    try {
+      const res = await fetch(`${API_URL}/communities/${communityId}/join`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error);
+        return;
+      }
+      setSelectedCommunity(data.community);
+      setCommunities(
+        communities.map((c) => (c._id === communityId ? data.community : c))
+      );
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const votePost = (postId, delta) => {
-    const updated = communities.map((c) => {
-      if (c.id !== selectedCommunity.id) return c;
-      return {
-        ...c,
-        posts: c.posts.map((p) => {
-          if (p.id !== postId) return p;
-          const newVote = p.userVote === delta ? 0 : delta;
-          return {
-            ...p,
-            userVote: newVote,
-            votes: p.votes - p.userVote + newVote,
-          };
-        }),
-      };
-    });
-    setCommunities(updated);
-    const updatedComm = updated.find((c) => c.id === selectedCommunity.id);
-    setSelectedCommunity(updatedComm);
-    setSelectedPost(updatedComm.posts.find((p) => p.id === postId));
+  // CREATE POST
+  const createPost = async (communityId, title, content) => {
+    try {
+      const res = await fetch(`${API_URL}/posts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title, content, communityId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error);
+        return;
+      }
+      // Refresh community to include new post
+      openCommunity({ _id: communityId });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const addComment = (postId, text) => {
-    const updated = communities.map((c) => {
-      if (c.id !== selectedCommunity.id) return c;
-      return {
-        ...c,
-        posts: c.posts.map((p) =>
-          p.id === postId
-            ? { ...p, comments: [...p.comments, { id: Date.now(), text, author: user.username }] }
-            : p
-        ),
-      };
-    });
-    setCommunities(updated);
-    const updatedComm = updated.find((x) => x.id === selectedCommunity.id);
-    setSelectedCommunity(updatedComm);
-    setSelectedPost(updatedComm.posts.find((p) => p.id === postId));
+  // VOTE POST
+  const votePost = async (postId, vote) => {
+    try {
+      const res = await fetch(`${API_URL}/posts/${postId}/vote`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ vote }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error);
+        return;
+      }
+      // Refresh community posts
+      if (selectedCommunity) openCommunity(selectedCommunity);
+      if (selectedPost) openPost(selectedPost);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // ADD COMMENT
+  const addComment = async (postId, text) => {
+    try {
+      const res = await fetch(`${API_URL}/posts/${postId}/comment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error);
+        return;
+      }
+      // Refresh post and community
+      if (selectedCommunity) openCommunity(selectedCommunity);
+      if (selectedPost) openPost(selectedPost);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // UPDATE BIO
+  const onSaveBio = async (newBio) => {
+    try {
+      if (!token) return;
+      const res = await fetch(`${API_URL}/auth/update-bio`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ bio: newBio }),
+      });
+      const data = await res.json();
+      if (!data.error) setUser(data.user);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -194,14 +237,13 @@ function App() {
         />
 
         <div className="content">
-          {/* HOME */}
           {page === "home" && (
             <div className="posts-container">
               <h2>Trending Communities</h2>
               {communities.map((c) => (
-                <div key={c.id} className="post">
+                <div key={c._id} className="post">
                   <h4>r/{c.name}</h4>
-                  <p>{c.members} members</p>
+                  <p>{c.members.length} members</p>
                   <button onClick={() => openCommunity(c)}>View</button>
                 </div>
               ))}
@@ -212,7 +254,7 @@ function App() {
             <>
               <h3>Search Results</h3>
               {searchResults.map((c) => (
-                <div key={c.id} className="post">
+                <div key={c._id} className="post">
                   <h4>r/{c.name}</h4>
                   <button onClick={() => openCommunity(c)}>Open</button>
                 </div>
@@ -246,7 +288,7 @@ function App() {
             <ProfilePage
               user={user}
               posts={communities.flatMap((c) => c.posts)}
-              onSaveBio={(newBio) => setUser({ ...user, bio: newBio })}
+              onSaveBio={onSaveBio}
             />
           )}
 
@@ -264,7 +306,10 @@ function App() {
           )}
 
           {page === "create-post" && selectedCommunity && (
-            <CreatePostPage community={selectedCommunity} onCreate={createPost} />
+            <CreatePostPage
+              community={selectedCommunity}
+              onCreate={createPost}
+            />
           )}
 
           {page === "post" && selectedPost && (

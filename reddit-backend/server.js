@@ -5,6 +5,7 @@ import connectDB from "./config/db.js";
 
 import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/posts.js";
+import communityRoutes from "./routes/communities.js";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ connectDB();
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/communities", communityRoutes);
 
 app.get("/", (req, res) => res.send("Backend running!"));
 
