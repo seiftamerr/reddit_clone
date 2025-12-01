@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import CommunityPage from "./components/CommunityPage";
@@ -8,6 +8,7 @@ import LoginPage from "./components/LoginPage";
 import SignUpPage from "./components/SignUpPage";
 import ProfilePage from "./components/ProfilePage";
 import PostPage from "./components/PostPage";
+import { API_URL } from "./config";
 import "./App.css";
 
 function App() {
@@ -16,33 +17,32 @@ function App() {
   const [selectedPost, setSelectedPost] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [user, setUser] = useState(null);
+  const [communities, setCommunities] = useState([]);
 
-  // USER DATA
-  const [user, setUser] = useState({
-    username: "Seif",
-    bio: "Hello, this is my profile.",
-    joinedCommunities: []
-  });
-
-  // COMMUNITIES
-  const [communities, setCommunities] = useState([
-    {
-      id: 1,
-      name: "ReactJS",
-      members: 12,
-      joined: false,
-      posts: []
-    },
-    {
-      id: 2,
-      name: "Gaming",
-      members: 44,
-      joined: false,
-      posts: []
+  // Fetch logged-in user and communities on load
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetch(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.error) {
+            setUser(data.user);
+            setIsLoggedIn(true);
+          }
+        })
+        .catch(console.error);
     }
-  ]);
 
-  // NAVIGATION
+    fetch(`${API_URL}/communities`)
+      .then((res) => res.json())
+      .then((data) => setCommunities(data))
+      .catch(() => setCommunities([]));
+  }, []);
+
   const goHome = () => {
     setPage("home");
     setSelectedCommunity(null);
@@ -60,70 +60,58 @@ function App() {
     setPage("post");
   };
 
-  // SEARCH
+  const logoutUser = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+    setIsLoggedIn(false);
+    setPage("home");
+  };
+
   const searchResults = communities.filter((c) =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // CREATE COMMUNITY
   const createCommunity = (name) => {
-    const newComm = {
-      id: Date.now(),
-      name,
-      members: 1,
-      joined: true,
-      posts: []
-    };
-
-    // user joins it by default
+    const newComm = { id: Date.now(), name, members: 1, joined: true, posts: [] };
+    setCommunities([...communities, newComm]);
     setUser({
       ...user,
-      joinedCommunities: [...user.joinedCommunities, name]
+      joinedCommunities: [...(user?.joinedCommunities || []), name],
     });
-
-    setCommunities([...communities, newComm]);
     setSelectedCommunity(newComm);
     setPage("community");
   };
 
-  // JOIN / LEAVE COMMUNITY
   const toggleMembership = (communityId) => {
     const updated = communities.map((c) => {
       if (c.id !== communityId) return c;
-
       const isJoining = !c.joined;
-
-      // update user joined list
       if (isJoining) {
         setUser({
           ...user,
-          joinedCommunities: [...user.joinedCommunities, c.name]
+          joinedCommunities: [...(user?.joinedCommunities || []), c.name],
         });
       } else {
         setUser({
           ...user,
-          joinedCommunities: user.joinedCommunities.filter(
+          joinedCommunities: (user?.joinedCommunities || []).filter(
             (name) => name !== c.name
-          )
+          ),
         });
       }
-
       return {
         ...c,
         joined: isJoining,
-        members: isJoining ? c.members + 1 : c.members - 1
+        members: isJoining ? c.members + 1 : c.members - 1,
       };
     });
-
     setCommunities(updated);
     setSelectedCommunity(updated.find((c) => c.id === communityId));
   };
 
-  // CREATE POST
   const createPost = (communityId, title, content) => {
     const updated = communities.map((c) => {
       if (c.id !== communityId) return c;
-
       return {
         ...c,
         posts: [
@@ -135,77 +123,54 @@ function App() {
             author: user.username,
             votes: 0,
             userVote: 0,
-            comments: []
-          }
-        ]
+            comments: [],
+          },
+        ],
       };
     });
-
     setCommunities(updated);
     setSelectedCommunity(updated.find((c) => c.id === communityId));
     setPage("community");
   };
 
-  // REDDIT-VOTING
   const votePost = (postId, delta) => {
     const updated = communities.map((c) => {
       if (c.id !== selectedCommunity.id) return c;
-
       return {
         ...c,
         posts: c.posts.map((p) => {
           if (p.id !== postId) return p;
-
           const newVote = p.userVote === delta ? 0 : delta;
-
           return {
             ...p,
             userVote: newVote,
-            votes: p.votes - p.userVote + newVote
+            votes: p.votes - p.userVote + newVote,
           };
-        })
+        }),
       };
     });
-
     setCommunities(updated);
-
     const updatedComm = updated.find((c) => c.id === selectedCommunity.id);
     setSelectedCommunity(updatedComm);
     setSelectedPost(updatedComm.posts.find((p) => p.id === postId));
   };
 
-  // COMMENTS
   const addComment = (postId, text) => {
     const updated = communities.map((c) => {
       if (c.id !== selectedCommunity.id) return c;
-
       return {
         ...c,
         posts: c.posts.map((p) =>
           p.id === postId
-            ? {
-                ...p,
-                comments: [
-                  ...p.comments,
-                  { id: Date.now(), text, author: user.username }
-                ]
-              }
+            ? { ...p, comments: [...p.comments, { id: Date.now(), text, author: user.username }] }
             : p
-        )
+        ),
       };
     });
-
     setCommunities(updated);
-
     const updatedComm = updated.find((x) => x.id === selectedCommunity.id);
     setSelectedCommunity(updatedComm);
     setSelectedPost(updatedComm.posts.find((p) => p.id === postId));
-  };
-
-  // LOGOUT
-  const logoutUser = () => {
-    setIsLoggedIn(false);
-    setPage("home");
   };
 
   return (
@@ -243,7 +208,6 @@ function App() {
             </div>
           )}
 
-          {/* SEARCH RESULTS */}
           {searchQuery !== "" && page === "home" && (
             <>
               <h3>Search Results</h3>
@@ -256,30 +220,29 @@ function App() {
             </>
           )}
 
-          {/* LOGIN */}
           {page === "login" && (
             <LoginPage
               onSignUpClick={() => setPage("signup")}
-              onSuccess={() => {
+              onSuccess={(userData) => {
+                setUser(userData);
                 setIsLoggedIn(true);
                 setPage("home");
               }}
             />
           )}
 
-          {/* SIGNUP */}
           {page === "signup" && (
             <SignUpPage
               onLoginClick={() => setPage("login")}
-              onSuccess={() => {
+              onSuccess={(userData) => {
+                setUser(userData);
                 setIsLoggedIn(true);
                 setPage("home");
               }}
             />
           )}
 
-          {/* PROFILE */}
-          {page === "profile" && (
+          {page === "profile" && user && (
             <ProfilePage
               user={user}
               posts={communities.flatMap((c) => c.posts)}
@@ -287,12 +250,10 @@ function App() {
             />
           )}
 
-          {/* CREATE COMMUNITY */}
           {page === "create-community" && (
             <CreateCommunityPage onCreate={createCommunity} />
           )}
 
-          {/* COMMUNITY PAGE */}
           {page === "community" && selectedCommunity && (
             <CommunityPage
               community={selectedCommunity}
@@ -302,15 +263,10 @@ function App() {
             />
           )}
 
-          {/* CREATE POST */}
           {page === "create-post" && selectedCommunity && (
-            <CreatePostPage
-              community={selectedCommunity}
-              onCreate={createPost}
-            />
+            <CreatePostPage community={selectedCommunity} onCreate={createPost} />
           )}
 
-          {/* POST PAGE */}
           {page === "post" && selectedPost && (
             <PostPage
               post={selectedPost}

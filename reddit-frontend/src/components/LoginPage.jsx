@@ -1,63 +1,78 @@
-import React from "react";
-import "./LoginPage.css"; // ← Import the CSS file
+import React, { useState } from "react";
+import "./LoginPage.css";
+import { API_URL } from "../config";
 
-// Accept the onSignUpClick prop
-export default function LoginPage({ onSignUpClick }) {
+export default function LoginPage({ onSignUpClick, onSuccess }) {
+  const [emailOrUsername, setEmailOrUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emailOrUsername, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Login failed");
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+
+      // fetch user data after login
+      const userRes = await fetch(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${data.token}` },
+      });
+      const userData = await userRes.json();
+
+      if (userData.error) {
+        setError(userData.error);
+        return;
+      }
+
+      if (onSuccess) onSuccess(userData.user);
+    } catch (err) {
+      console.error(err);
+      setError("Network error, try again.");
+    }
+  }
+
   return (
     <div className="login-container">
       <div className="login-box">
         <h1 className="login-title">Log In</h1>
 
-        <p className="login-text">
-          By continuing, you agree to our
-          <span className="link"> User Agreement </span>
-          and acknowledge that you understand the
-          <span className="link"> Privacy Policy</span>.
-        </p>
-
-        <div className="button-group">
-          <button className="login-btn social-btn">
-            📱 Continue With Phone Number
-          </button>
-          <button className="login-btn social-btn">
-            🌐 Continue with Google
-          </button>
-        </div>
-
-        <div className="divider">
-          <div className="line"></div>
-          <span className="or-text">OR</span>
-          <div className="line"></div>
-        </div>
-
-        <form className="form-fields">
+        <form className="form-fields" onSubmit={handleLogin}>
           <input
             type="text"
             placeholder="Email or username"
             className="input-field"
             required
+            value={emailOrUsername}
+            onChange={(e) => setEmailOrUsername(e.target.value)}
           />
           <input
             type="password"
             placeholder="Password"
             className="input-field"
             required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
-
-          <a href="#" className="forgot-password">
-            Forgot password?
-          </a>
-
-          <button type="submit" className="login-submit">
-            Log In
-          </button>
+          <button type="submit" className="login-submit">Log In</button>
+          {error && <p className="error-text">{error}</p>}
         </form>
 
         <p className="signup-text">
-          New to Redex?{" "}
-          <span className="signup-link" onClick={onSignUpClick}>
-            Sign Up
-          </span>
+          New here? <span className="signup-link" onClick={onSignUpClick}>Sign Up</span>
         </p>
       </div>
     </div>

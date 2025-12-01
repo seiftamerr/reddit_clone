@@ -2,29 +2,23 @@ import React, { useState } from "react";
 import "./ProfilePage.css";
 
 const ProfilePage = ({ user, posts, onSaveBio }) => {
+  if (!user) return <p>Loading profile...</p>; // prevent white screen
   const [bio, setBio] = useState(user.bio || "");
-
-  // all posts by this user
   const userPosts = posts.filter((p) => p.author === user.username);
 
   return (
     <div className="page profile-page">
       <h2>{user.username}'s Profile</h2>
 
-      {/* BIO */}
       <div className="profile-section">
         <label>Bio</label>
-        <textarea
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-        />
+        <textarea value={bio} onChange={(e) => setBio(e.target.value)} />
         <button onClick={() => onSaveBio(bio)}>Save</button>
       </div>
 
-      {/* JOINED COMMUNITIES */}
       <div className="profile-section">
         <h3>Your Joined Communities</h3>
-        {user.joinedCommunities.length === 0 ? (
+        {user.joinedCommunities?.length === 0 ? (
           <p>You haven't joined any communities yet.</p>
         ) : (
           <ul>
@@ -35,7 +29,6 @@ const ProfilePage = ({ user, posts, onSaveBio }) => {
         )}
       </div>
 
-      {/* USER POSTS */}
       <div className="profile-section">
         <h3>Your Posts</h3>
         {userPosts.length === 0 ? (

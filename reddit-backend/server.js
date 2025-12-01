@@ -1,24 +1,31 @@
 import express from "express";
-import mongoose from "mongoose";
-import cors from "cors";
 import dotenv from "dotenv";
+import cors from "cors";
+import connectDB from "./config/db.js";
+
+import authRoutes from "./routes/auth.js";
+import postRoutes from "./routes/posts.js";
 
 dotenv.config();
+
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5174", "http://localhost:5173"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 app.use(express.json());
 
-// Routes
-import authRoutes from "./routes/authRoutes.js";
+connectDB();
+
 app.use("/api/auth", authRoutes);
+app.use("/api/posts", postRoutes);
 
-// DB connect
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected locally"))
-  .catch((err) => console.log("MongoDB error:", err));
+app.get("/", (req, res) => res.send("Backend running!"));
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`);
-});
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
