@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import CommunityPage from "./components/CommunityPage";
@@ -19,6 +19,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState(null);
   const [communities, setCommunities] = useState([]);
+  const [viewingUser, setViewingUser] = useState(null);
 
   const token = localStorage.getItem("token");
 
@@ -48,11 +49,43 @@ function App() {
       .catch(() => setCommunities([]));
   };
 
+  const refreshUser = useCallback(() => {
+    if (token) {
+      fetch(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.error) {
+            setUser(data.user);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [token]);
+
   const goHome = () => {
     setPage("home");
     setSelectedCommunity(null);
     setSelectedPost(null);
+    setViewingUser(null);
     fetchCommunities();
+  };
+
+  const openUserProfile = async (userId) => {
+    try {
+      const res = await fetch(`${API_URL}/auth/user/${userId}`);
+      const data = await res.json();
+      if (res.ok) {
+        setViewingUser(data.user);
+        setPage("profile");
+      } else {
+        alert(data.error || "Failed to load user profile");
+      }
+    } catch (err) {
+      console.error("Error fetching user profile:", err);
+      alert("Failed to load user profile");
+    }
   };
 
   const openCommunity = (community) => {
@@ -65,9 +98,23 @@ function App() {
       });
   };
 
-  const openPost = (post) => {
-    setSelectedPost(post);
-    setPage("post");
+  const openPost = async (post) => {
+    try {
+      // Fetch full post with populated comments
+      const res = await fetch(`${API_URL}/posts/${post._id}`);
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to load post");
+        return;
+      }
+      setSelectedPost(data);
+      setPage("post");
+    } catch (err) {
+      console.error(err);
+      // Fallback to using the post data we have
+      setSelectedPost(post);
+      setPage("post");
+    }
   };
 
   const logoutUser = () => {
@@ -77,9 +124,28 @@ function App() {
     setPage("home");
   };
 
-  const searchResults = communities.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const [searchResults, setSearchResults] = useState({ communities: [], posts: [] });
+
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setSearchResults({ communities: [], posts: [] });
+      return;
+    }
+
+    const searchTimeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`${API_URL}/posts/search?q=${encodeURIComponent(searchQuery)}`);
+        const data = await res.json();
+        if (res.ok) {
+          setSearchResults(data);
+        }
+      } catch (err) {
+        console.error("Search error:", err);
+      }
+    }, 300); // Debounce search
+
+    return () => clearTimeout(searchTimeout);
+  }, [searchQuery]);
 
   // CREATE COMMUNITY
   const createCommunity = async (name, description = "") => {
@@ -121,6 +187,8 @@ function App() {
       setCommunities(
         communities.map((c) => (c._id === communityId ? data.community : c))
       );
+      // Refresh user data to update joinedCommunities
+      refreshUser();
     } catch (err) {
       console.error(err);
     }
@@ -150,7 +218,7 @@ function App() {
   };
 
   // VOTE POST
-  const votePost = async (postId, vote) => {
+  const votePost = useCallback(async (postId, vote) => {
     try {
       const res = await fetch(`${API_URL}/posts/${postId}/vote`, {
         method: "PUT",
@@ -165,16 +233,24 @@ function App() {
         alert(data.error);
         return;
       }
-      // Refresh community posts
-      if (selectedCommunity) openCommunity(selectedCommunity);
-      if (selectedPost) openPost(selectedPost);
+      // Refresh community posts and selected post
+      if (selectedCommunity) {
+        const commRes = await fetch(`${API_URL}/communities/${selectedCommunity._id}`);
+        const commData = await commRes.json();
+        setSelectedCommunity(commData);
+      }
+      if (selectedPost) {
+        const postRes = await fetch(`${API_URL}/posts/${selectedPost._id}`);
+        const postData = await postRes.json();
+        setSelectedPost(postData);
+      }
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [token, selectedCommunity, selectedPost]);
 
   // ADD COMMENT
-  const addComment = async (postId, text) => {
+  const addComment = useCallback(async (postId, text) => {
     try {
       const res = await fetch(`${API_URL}/posts/${postId}/comment`, {
         method: "POST",
@@ -190,12 +266,81 @@ function App() {
         return;
       }
       // Refresh post and community
-      if (selectedCommunity) openCommunity(selectedCommunity);
-      if (selectedPost) openPost(selectedPost);
+      if (selectedCommunity) {
+        const commRes = await fetch(`${API_URL}/communities/${selectedCommunity._id}`);
+        const commData = await commRes.json();
+        setSelectedCommunity(commData);
+      }
+      if (selectedPost) {
+        const postRes = await fetch(`${API_URL}/posts/${selectedPost._id}`);
+        const postData = await postRes.json();
+        setSelectedPost(postData);
+      }
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [token, selectedCommunity, selectedPost]);
+
+  // EDIT POST
+  const editPost = useCallback(async (postId, title, content) => {
+    try {
+      const res = await fetch(`${API_URL}/posts/${postId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title, content }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error);
+        return;
+      }
+      // Refresh post and community
+      if (selectedCommunity) {
+        const commRes = await fetch(`${API_URL}/communities/${selectedCommunity._id}`);
+        const commData = await commRes.json();
+        setSelectedCommunity(commData);
+      }
+      if (selectedPost) {
+        const postRes = await fetch(`${API_URL}/posts/${selectedPost._id}`);
+        const postData = await postRes.json();
+        setSelectedPost(postData);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [token, selectedCommunity, selectedPost]);
+
+  // DELETE POST
+  const deletePost = useCallback(async (postId) => {
+    try {
+      const res = await fetch(`${API_URL}/posts/${postId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error);
+        return;
+      }
+      // Go back to community
+      if (selectedCommunity) {
+        const commRes = await fetch(`${API_URL}/communities/${selectedCommunity._id}`);
+        const commData = await commRes.json();
+        setSelectedCommunity(commData);
+        setPage("community");
+      } else {
+        setPage("home");
+      }
+      setSelectedPost(null);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [token, selectedCommunity]);
 
   // UPDATE BIO
   const onSaveBio = async (newBio) => {
@@ -221,7 +366,11 @@ function App() {
       <Header
         onLogoClick={goHome}
         onLoginClick={() => setPage("login")}
-        onProfileClick={() => setPage("profile")}
+        onProfileClick={() => {
+          setViewingUser(null);
+          setPage("profile");
+          refreshUser();
+        }}
         onSearch={(q) => setSearchQuery(q)}
         isLoggedIn={isLoggedIn}
       />
@@ -230,36 +379,99 @@ function App() {
         <Sidebar
           communities={communities}
           onHomeClick={goHome}
-          onCreateCommunity={() => setPage("create-community")}
+          onCreateCommunity={() => {
+            if (!user) {
+              alert("You need to be signed in to create a community");
+              return;
+            }
+            setPage("create-community");
+          }}
           onSelectCommunity={openCommunity}
-          onProfileClick={() => setPage("profile")}
+          onProfileClick={() => {
+          setViewingUser(null);
+          setPage("profile");
+          refreshUser();
+        }}
           onLogout={logoutUser}
         />
 
         <div className="content">
           {page === "home" && (
             <div className="posts-container">
-              <h2>Trending Communities</h2>
-              {communities.map((c) => (
-                <div key={c._id} className="post">
-                  <h4>r/{c.name}</h4>
-                  <p>{c.members.length} members</p>
-                  <button onClick={() => openCommunity(c)}>View</button>
-                </div>
-              ))}
+              {searchQuery !== "" ? (
+                <>
+                  <h2>Search Results for "{searchQuery}"</h2>
+                  {searchResults.communities?.length > 0 && (
+                    <>
+                      <h3>Communities</h3>
+                      {searchResults.communities.map((c) => (
+                        <div key={c._id} className="post">
+                          <h4>r/{c.name}</h4>
+                          <p>{c.members?.length || 0} members</p>
+                          <button onClick={() => openCommunity(c)}>View</button>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  {searchResults.posts?.length > 0 && (
+                    <>
+                      <h3>Posts</h3>
+                      {searchResults.posts.map((p) => {
+                        const voteCount = (p.upvotes?.length || 0) - (p.downvotes?.length || 0);
+                        return (
+                          <div key={p._id} className="post" onClick={() => openPost(p)}>
+                            <h4>{p.title}</h4>
+                            <p>{p.content?.slice(0, 120) || ""}{p.content?.length > 120 ? "..." : ""}</p>
+                            <div className="post-meta">
+                              <span>r/{p.communityId?.name || "Unknown"}</span>
+                              <span>
+                                By{" "}
+                                <button
+                                  className="username-link"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (p.creatorId?._id) {
+                                      openUserProfile(p.creatorId._id);
+                                    }
+                                  }}
+                                  style={{
+                                    background: "none",
+                                    border: "none",
+                                    color: "#0079d3",
+                                    cursor: "pointer",
+                                    textDecoration: "underline",
+                                    padding: 0,
+                                    font: "inherit",
+                                  }}
+                                >
+                                  {p.creatorId?.username || "Unknown"}
+                                </button>
+                              </span>
+                              <span>{voteCount} votes</span>
+                              <span>{p.comments?.length || 0} comments</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
+                  {searchResults.communities?.length === 0 && searchResults.posts?.length === 0 && (
+                    <p>No results found matching "{searchQuery}"</p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <h2>Trending Communities</h2>
+                  {communities.map((c) => (
+                    <div key={c._id} className="post">
+                      <h4>r/{c.name}</h4>
+                      <p>{c.members?.length || 0} members</p>
+                      <button onClick={() => openCommunity(c)}>View</button>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
-          )}
-
-          {searchQuery !== "" && page === "home" && (
-            <>
-              <h3>Search Results</h3>
-              {searchResults.map((c) => (
-                <div key={c._id} className="post">
-                  <h4>r/{c.name}</h4>
-                  <button onClick={() => openCommunity(c)}>Open</button>
-                </div>
-              ))}
-            </>
           )}
 
           {page === "login" && (
@@ -284,10 +496,10 @@ function App() {
             />
           )}
 
-          {page === "profile" && user && (
+          {page === "profile" && (viewingUser || user) && (
             <ProfilePage
-              user={user}
-              posts={communities.flatMap((c) => c.posts)}
+              user={viewingUser || user}
+              currentUser={user}
               onSaveBio={onSaveBio}
             />
           )}
@@ -302,6 +514,9 @@ function App() {
               onJoinLeave={toggleMembership}
               onCreatePost={() => setPage("create-post")}
               onViewPost={openPost}
+              onVote={votePost}
+              user={user}
+              onViewUserProfile={openUserProfile}
             />
           )}
 
@@ -316,8 +531,11 @@ function App() {
             <PostPage
               post={selectedPost}
               onBack={() => setPage("community")}
-              onVote={votePost}
               onAddComment={addComment}
+              onEditPost={editPost}
+              onDeletePost={deletePost}
+              user={user}
+              onViewUserProfile={openUserProfile}
             />
           )}
         </div>

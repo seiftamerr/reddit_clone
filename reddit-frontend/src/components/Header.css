@@ -24,12 +24,30 @@
 }
 
 /* Center: Search input */
+.header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
 .header-center .search-input {
-  width: 300px;
-  padding: 0.3rem 0.8rem;
+  width: 100%;
+  max-width: 500px;
+  padding: 0.5rem 1rem;
   border-radius: 20px;
   border: none;
   outline: none;
+  font-size: 14px;
+  background: white;
+  color: #333;
+}
+
+.header-center .search-input::placeholder {
+  color: #999;
+}
+
+.header-center .search-input:focus {
+  box-shadow: 0 0 0 2px rgba(255, 69, 0, 0.2);
 }
 
 /* Right buttons */

@@ -62,9 +62,30 @@ export default function SignUpPage({ onLoginClick, onSuccess }) {
         <h1 className="signup-title">Sign Up</h1>
 
         <form className="form-fields" onSubmit={handleSignUp}>
-          <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} required />
-          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+          <input 
+            type="text" 
+            placeholder="Username" 
+            className="input-field"
+            value={username} 
+            onChange={e => setUsername(e.target.value)} 
+            required 
+          />
+          <input 
+            type="email" 
+            placeholder="Email" 
+            className="input-field"
+            value={email} 
+            onChange={e => setEmail(e.target.value)} 
+            required 
+          />
+          <input 
+            type="password" 
+            placeholder="Password" 
+            className="input-field"
+            value={password} 
+            onChange={e => setPassword(e.target.value)} 
+            required 
+          />
           <button type="submit" className="signup-submit">Sign Up</button>
           {error && <p className="error-text">{error}</p>}
         </form>

@@ -12,7 +12,7 @@ const Header = ({
     <header className="header">
       <div className="header-left">
         <h1 className="logo" onClick={onLogoClick}>
-          Reddit Clone
+          Reddex
         </h1>
       </div>
 
