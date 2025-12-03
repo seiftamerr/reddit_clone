@@ -11,6 +11,12 @@ const ProfilePage = ({ user, onSaveBio, currentUser }) => {
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [profileUser, setProfileUser] = useState(user);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [username, setUsername] = useState(user.username || "");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [updatingAccount, setUpdatingAccount] = useState(false);
+  const [accountError, setAccountError] = useState("");
+  const [accountSuccess, setAccountSuccess] = useState("");
 
   const isOwnProfile = currentUser && user && 
     (currentUser._id?.toString() === user._id?.toString() || 
@@ -113,6 +119,59 @@ const ProfilePage = ({ user, onSaveBio, currentUser }) => {
     setTimeout(() => setSuccessMessage(""), 3000);
   };
 
+  const handleUpdateAccount = async () => {
+    if (!isOwnProfile) return;
+    if (!username.trim()) {
+      setAccountError("Username cannot be empty");
+      return;
+    }
+
+    if (!currentPassword && newPassword) {
+      setAccountError("Enter your current password to set a new one");
+      return;
+    }
+
+    setAccountError("");
+    setAccountSuccess("");
+    setUpdatingAccount(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setAccountError("You must be logged in");
+        setUpdatingAccount(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/auth/update-profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          username: username.trim(),
+          currentPassword: currentPassword || undefined,
+          newPassword: newPassword || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setAccountError(data.error || "Failed to update profile");
+      } else {
+        setAccountSuccess("Account updated successfully!");
+        setProfileUser((prev) => ({ ...prev, username: data.user.username }));
+        setCurrentPassword("");
+        setNewPassword("");
+        setTimeout(() => setAccountSuccess(""), 3000);
+      }
+    } catch (err) {
+      console.error("Error updating account:", err);
+      setAccountError("Failed to update profile");
+    } finally {
+      setUpdatingAccount(false);
+    }
+  };
+
   return (
     <div className="page profile-page">
       <div className="profile-header">
@@ -133,23 +192,63 @@ const ProfilePage = ({ user, onSaveBio, currentUser }) => {
         </div>
       )}
 
-      {/* BIO SECTION */}
+      {/* ACCOUNT & BIO SECTION */}
       {isOwnProfile ? (
-        <div className="profile-section">
-          <label>Bio</label>
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="Write something about yourself"
-          />
-          <button
-            onClick={handleSave}
-            disabled={bio.trim() === user.bio}
-          >
-            Save
-          </button>
-          {successMessage && <p className="success-message">{successMessage}</p>}
-        </div>
+        <>
+          <div className="profile-section">
+            <h3>Account Settings</h3>
+            <div className="account-field">
+              <label>Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <div className="account-field">
+              <label>Current Password</label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password (only needed if changing password)"
+              />
+            </div>
+            <div className="account-field">
+              <label>New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password (optional)"
+              />
+            </div>
+            {accountError && <p className="error-message">{accountError}</p>}
+            {accountSuccess && <p className="success-message">{accountSuccess}</p>}
+            <button
+              onClick={handleUpdateAccount}
+              disabled={updatingAccount || (!newPassword && username === user.username)}
+            >
+              {updatingAccount ? "Updating..." : "Update Account"}
+            </button>
+          </div>
+
+          <div className="profile-section">
+            <label>Bio</label>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="Write something about yourself"
+            />
+            <button
+              onClick={handleSave}
+              disabled={bio.trim() === user.bio}
+            >
+              Save Bio
+            </button>
+            {successMessage && <p className="success-message">{successMessage}</p>}
+          </div>
+        </>
       ) : (
         <div className="profile-section">
           <label>Bio</label>

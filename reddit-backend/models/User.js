@@ -21,7 +21,20 @@ const userSchema = new mongoose.Schema({
   },
   bio: {
     type: String,
-    default: ""}
+    default: ""
+  },
+  joinedCommunities: {
+    type: [String],
+    default: []
+  },
+  following: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }],
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }]
 });
 
 export default mongoose.model("User", userSchema);

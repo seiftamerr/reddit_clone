@@ -12,6 +12,19 @@ const postSchema = new mongoose.Schema({
       author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
       text: String,
       createdAt: { type: Date, default: Date.now },
+      upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      replies: [
+        {
+          author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+          text: String,
+          createdAt: { type: Date, default: Date.now },
+          upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+          downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+        }
+      ],
+      editedAt: { type: Date },
+      isDeleted: { type: Boolean, default: false }
     }
   ]
 }, { timestamps: true });

@@ -15,6 +15,9 @@ const PostPage = ({ post, onBack, onAddComment, user, onDeletePost, onEditPost, 
   const [editPostTitle, setEditPostTitle] = useState("");
   const [editPostContent, setEditPostContent] = useState("");
   const replyTextareaRefs = useRef({});
+  const [summary, setSummary] = useState("");
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [summaryError, setSummaryError] = useState("");
 
   // Focus textarea when reply form opens
   useEffect(() => {
@@ -189,6 +192,33 @@ const PostPage = ({ post, onBack, onAddComment, user, onDeletePost, onEditPost, 
     if (!confirm("Are you sure you want to delete this post?")) return;
     if (onDeletePost) {
       await onDeletePost(currentPost._id);
+    }
+  };
+
+  const handleSummarize = async () => {
+    if (!currentPost?._id) return;
+    setSummaryError("");
+    setIsSummarizing(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/posts/${currentPost._id}/summarize`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setSummaryError(data.error || "Failed to summarize post");
+      } else {
+        setSummary(data.summary || "");
+      }
+    } catch (err) {
+      console.error("Summarize error:", err);
+      setSummaryError("Failed to summarize post");
+    } finally {
+      setIsSummarizing(false);
     }
   };
 
@@ -487,7 +517,22 @@ const PostPage = ({ post, onBack, onAddComment, user, onDeletePost, onEditPost, 
               <div className="post-stats">
                 <span className="vote-count-display">{voteCount} votes</span>
                 <span>{currentPost.comments?.filter(c => !c.isDeleted).length || 0} comments</span>
+                <button
+                  type="button"
+                  className="ai-summary-btn"
+                  onClick={handleSummarize}
+                  disabled={isSummarizing}
+                >
+                  {isSummarizing ? "Summarizing..." : "Summarize with AI"}
+                </button>
               </div>
+              {summaryError && <p className="error-message">{summaryError}</p>}
+              {summary && (
+                <div className="ai-summary-box">
+                  <h4>AI Summary</h4>
+                  <p>{summary}</p>
+                </div>
+              )}
             </>
           )}
         </div>

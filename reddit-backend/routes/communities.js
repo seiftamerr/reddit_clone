@@ -1,5 +1,6 @@
 import express from "express";
 import Community from "../models/communities.js";
+import User from "../models/User.js";
 import auth from "../middleware/auth.js";
 
 const router = express.Router();
@@ -21,6 +22,15 @@ router.post("/", auth, async (req, res) => {
     });
 
     await newComm.save();
+
+    // Add community to creator's joinedCommunities
+    const user = await User.findById(req.user.id);
+    if (user) {
+      if (!user.joinedCommunities.includes(name)) {
+        user.joinedCommunities.push(name);
+        await user.save();
+      }
+    }
 
     res.json({
       _id: newComm._id,
@@ -50,7 +60,13 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const community = await Community.findById(req.params.id)
-      .populate("posts")
+      .populate({
+        path: "posts",
+        populate: [
+          { path: "creatorId", select: "username" },
+          { path: "comments.author", select: "username" }
+        ]
+      })
       .populate("members", "username");
     if (!community) return res.status(404).json({ error: "Community not found" });
 
@@ -74,7 +90,7 @@ router.put("/:id/join", auth, async (req, res) => {
     const community = await Community.findById(req.params.id);
     if (!community) return res.status(404).json({ error: "Community not found" });
 
-    const isMember = community.members.includes(req.user.id);
+    const isMember = community.members.some(m => m.toString() === req.user.id);
 
     if (isMember) {
       community.members = community.members.filter((id) => id.toString() !== req.user.id);
@@ -83,6 +99,31 @@ router.put("/:id/join", auth, async (req, res) => {
     }
 
     await community.save();
+
+    // Update user's joinedCommunities
+    const user = await User.findById(req.user.id);
+    if (user) {
+      if (isMember) {
+        user.joinedCommunities = user.joinedCommunities.filter(name => name !== community.name);
+      } else {
+        if (!user.joinedCommunities.includes(community.name)) {
+          user.joinedCommunities.push(community.name);
+        }
+      }
+      await user.save();
+    }
+
+    // Populate members and posts before returning
+    await community.populate("members", "username");
+    await community.populate("creatorId", "username");
+    await community.populate({
+      path: "posts",
+      populate: [
+        { path: "creatorId", select: "username" },
+        { path: "comments.author", select: "username" }
+      ]
+    });
+
     res.json({ message: isMember ? "Left community" : "Joined community", community });
   } catch (error) {
     res.status(500).json({ error: error.message });

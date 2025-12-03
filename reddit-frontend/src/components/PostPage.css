@@ -307,3 +307,32 @@
   cursor: pointer;
   font-weight: 600;
 }
+
+.ai-summary-btn {
+  margin-left: auto;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #7c3aed;
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.ai-summary-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.ai-summary-box {
+  margin-top: 12px;
+  padding: 10px;
+  background: #f3f0ff;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.ai-summary-box h4 {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+}
