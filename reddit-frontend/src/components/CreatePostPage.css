@@ -1,36 +1,149 @@
 .page {
-  padding: 20px;
+  padding: 0;
   margin-left: 0;
+  max-width: 100%;
+  outline: none;
 }
 
 .page h2 {
   font-size: 24px;
-  margin-bottom: 15px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+
+.paste-indicator {
+  position: fixed;
+  top: 60px;
+  right: 20px;
+  background: var(--accent);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  z-index: 1001;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.3s ease-out, fadeOut 0.3s ease-in 1.7s forwards;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .page input,
 .page textarea {
   width: 100%;
   padding: 12px;
-  margin-bottom: 15px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 15px;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  font-size: 14px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.page input:focus,
+.page textarea:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  background: var(--bg-primary);
+}
+
+.page input::placeholder,
+.page textarea::placeholder {
+  color: var(--text-tertiary);
 }
 
 .page textarea {
-  height: 180px;
+  min-height: 180px;
+  resize: vertical;
+}
+
+.image-upload-section {
+  margin-bottom: 16px;
+}
+
+.image-upload-label {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--button-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.image-upload-label:hover {
+  background: var(--button-hover);
+}
+
+.image-preview-container {
+  margin-top: 12px;
+  position: relative;
+}
+
+.image-preview {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.remove-image-btn {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: background-color 0.2s ease;
+}
+
+.remove-image-btn:hover {
+  background: var(--accent-hover);
 }
 
 .page button {
-  background-color: #ff4500;
-  padding: 12px 18px;
+  background-color: var(--accent);
+  padding: 8px 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: 9999px;
   color: white;
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .page button:hover {
-  background-color: #e03d00;
+  background-color: var(--accent-hover);
+}
+
+.page button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

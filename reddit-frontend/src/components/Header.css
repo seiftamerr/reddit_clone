@@ -2,25 +2,38 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 1.5rem;
-  background-color: #ff4500;
-  color: white;
+  padding: 0 20px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 48px;
   z-index: 1000;
   box-sizing: border-box;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Left: Logo */
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
 .header-left .logo {
-  font-size: 1.3rem;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 700;
   cursor: pointer;
-  color: white;        /* ensure logo is visible */
+  color: var(--accent);
   text-decoration: none;
+  transition: opacity 0.2s ease;
+  letter-spacing: -0.5px;
+}
+
+.header-left .logo:hover {
+  opacity: 0.8;
 }
 
 /* Center: Search input */
@@ -28,54 +41,88 @@
   flex: 1;
   display: flex;
   justify-content: center;
+  max-width: 700px;
+  margin: 0 20px;
 }
 
 .header-center .search-input {
   width: 100%;
-  max-width: 500px;
-  padding: 0.5rem 1rem;
+  padding: 6px 16px;
   border-radius: 20px;
-  border: none;
+  border: 1px solid var(--border-color);
   outline: none;
   font-size: 14px;
-  background: white;
-  color: #333;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .header-center .search-input::placeholder {
-  color: #999;
+  color: var(--text-tertiary);
 }
 
 .header-center .search-input:focus {
-  box-shadow: 0 0 0 2px rgba(255, 69, 0, 0.2);
+  border-color: var(--accent-blue);
+  background: var(--bg-primary);
+  border-width: 1px;
 }
 
 /* Right buttons */
 .header-right {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+.theme-toggle {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.theme-toggle:hover {
+  background-color: var(--button-secondary);
 }
 
 .login-btn,
 .user-btn {
-  padding: 0.35rem 0.9rem;
-  border-radius: 20px;
-  font-weight: bold;
+  padding: 4px 16px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 12px;
   cursor: pointer;
-  border: none;
-  transition: 0.2s;
+  border: 1px solid var(--accent);
+  transition: all 0.2s ease;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.login-btn {
+  background: var(--accent);
+  color: white;
 }
 
 .login-btn:hover {
-  background: #ffd2c2;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .user-btn {
-  background: white;
-  color: #ff4500;
+  background: var(--button-bg);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .user-btn:hover {
-  background: #ffe2d6;
-  transform: scale(1.05);
+  background: var(--button-hover);
 }

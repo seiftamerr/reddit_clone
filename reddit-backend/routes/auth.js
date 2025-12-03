@@ -288,4 +288,27 @@ router.get("/user/:userId", async (req, res) => {
   }
 });
 
+// SEARCH USERS
+router.get("/search", async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.trim() === "") {
+      return res.json({ users: [] });
+    }
+
+    const searchTerm = q.trim().toLowerCase();
+
+    // Search users by username
+    const users = await User.find({
+      username: { $regex: searchTerm, $options: "i" }
+    })
+      .select("-passwordHash")
+      .limit(10);
+
+    res.json({ users });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

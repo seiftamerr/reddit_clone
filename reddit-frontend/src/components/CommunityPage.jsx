@@ -127,7 +127,12 @@ const CommunityPage = ({ community, onJoinLeave, onCreatePost, onViewPost, onVot
                 </div>
                 <div className="post-main">
                   <h4>{p.title}</h4>
-                  <p>{p.content.slice(0, 120)}{p.content.length > 120 ? "..." : ""}</p>
+                  {p.content && <p>{p.content.slice(0, 120)}{p.content.length > 120 ? "..." : ""}</p>}
+                  {p.imageUrl && (
+                    <div className="post-image-container">
+                      <img src={p.imageUrl} alt={p.title} className="post-image" onClick={(e) => e.stopPropagation()} />
+                    </div>
+                  )}
 
                   <div className="post-meta">
                     <span>

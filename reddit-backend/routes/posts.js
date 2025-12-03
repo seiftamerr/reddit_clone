@@ -42,7 +42,7 @@ router.get("/search", async (req, res) => {
 // CREATE POST
 router.post("/", auth, async (req, res) => {
   try {
-    const { title, content, communityId } = req.body;
+    const { title, content, communityId, imageUrl } = req.body;
 
     const community = await Community.findById(communityId);
     if (!community) return res.status(404).json({ error: "Community not found" });
@@ -50,6 +50,7 @@ router.post("/", auth, async (req, res) => {
     const newPost = new Post({
       title,
       content,
+      imageUrl: imageUrl || "",
       communityId,
       creatorId: req.user.id,
       upvotes: [],

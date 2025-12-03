@@ -479,12 +479,6 @@ const PostPage = ({ post, onBack, onAddComment, user, onDeletePost, onEditPost, 
             <>
               <div className="post-header">
                 <h2>{currentPost.title}</h2>
-                {isPostOwner && (
-                  <div className="post-actions">
-                    <button className="edit-btn" onClick={() => setShowEditPost(true)}>Edit</button>
-                    <button className="delete-btn" onClick={handleDeletePost}>Delete</button>
-                  </div>
-                )}
               </div>
               <p className="post-author">
                 By{" "}
@@ -513,18 +507,35 @@ const PostPage = ({ post, onBack, onAddComment, user, onDeletePost, onEditPost, 
                 )}{" "}
                 • r/{currentPost.communityId?.name || "Unknown"}
               </p>
-              <p>{currentPost.content}</p>
+              <div className="post-content-actions">
+                <div className="post-content-main">
+                  {currentPost.content && <p>{currentPost.content}</p>}
+                  {currentPost.imageUrl && (
+                    <div className="post-image-container">
+                      <img src={currentPost.imageUrl} alt={currentPost.title} className="post-image" />
+                    </div>
+                  )}
+                </div>
+                <div className="post-actions">
+                  {isPostOwner && (
+                    <>
+                      <button className="edit-btn" onClick={() => setShowEditPost(true)}>Edit</button>
+                      <button className="delete-btn" onClick={handleDeletePost}>Delete</button>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    className="ai-summary-btn"
+                    onClick={handleSummarize}
+                    disabled={isSummarizing}
+                  >
+                    {isSummarizing ? "Summarizing..." : "Summarize with AI"}
+                  </button>
+                </div>
+              </div>
               <div className="post-stats">
                 <span className="vote-count-display">{voteCount} votes</span>
                 <span>{currentPost.comments?.filter(c => !c.isDeleted).length || 0} comments</span>
-                <button
-                  type="button"
-                  className="ai-summary-btn"
-                  onClick={handleSummarize}
-                  disabled={isSummarizing}
-                >
-                  {isSummarizing ? "Summarizing..." : "Summarize with AI"}
-                </button>
               </div>
               {summaryError && <p className="error-message">{summaryError}</p>}
               {summary && (

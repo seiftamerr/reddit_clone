@@ -1,41 +1,48 @@
 .sidebar {
   width: 240px;
-  background: #f5f5f5;
-  padding: 20px;
-  height: calc(100vh - 60px); /* full height minus header */
-  border-right: 1px solid #ddd;
+  background: var(--bg-primary);
+  padding: 16px 8px;
+  height: calc(100vh - 48px);
+  border-right: 1px solid var(--border-color);
   position: fixed;
-  top: 60px;
+  top: 48px;
   left: 0;
   overflow-y: auto;
   box-sizing: border-box;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .sidebar-section {
-  margin-bottom: 25px;
+  margin-bottom: 24px;
 }
 
 .sidebar-section-title {
-  font-size: 18px;
-  margin-bottom: 10px;
-  font-weight: bold;
-  color: #333;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding: 0 16px;
+  color: var(--text-tertiary);
 }
 
 .sidebar-btn {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
-  padding: 10px;
-  margin-bottom: 8px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  padding: 8px 16px;
+  margin-bottom: 4px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
   text-align: left;
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
   cursor: pointer;
-  transition: 0.15s;
+  transition: background-color 0.2s ease;
 }
 
 .sidebar-btn:hover {
-  background: #eaeaea;
+  background: var(--button-hover);
 }
