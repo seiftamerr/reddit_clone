@@ -474,3 +474,58 @@
   color: var(--text-secondary);
   line-height: 1.6;
 }
+
+/* -------------------------------------------------- */
+/*  ADDITIONS FOR EXPANDED EDIT MODE (FULL WIDTH)     */
+/* -------------------------------------------------- */
+
+/* When editing, make the wrapper wider and clearer */
+.post-editing::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.32);
+  z-index: 1100;
+}
+
+/* fixed, centered wide editor in edit mode */
+.post-editing .post-content-wrapper {
+  position: fixed;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1200px, calc(100% - 64px));
+  max-width: 1200px;
+  z-index: 1200;
+  padding: 28px;
+  border-radius: 12px;
+  margin: 0;
+  box-shadow: 0 20px 60px rgba(2,6,23,0.4);
+}
+
+/* Prevent the edit form from being squeezed */
+.post-editing .edit-post-form {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.post-editing .edit-post-form input,
+.post-editing .edit-post-form textarea {
+  font-size: 16px;
+  padding: 14px;
+  border-radius: 10px;
+}
+
+@media (max-width: 900px) {
+  .post-editing .post-content-wrapper {
+    top: 48px;
+    width: calc(100% - 32px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 18px;
+  }
+}

@@ -14,6 +14,7 @@ const PostPage = ({ post, onBack, onAddComment, user, onDeletePost, onEditPost, 
   const [showEditPost, setShowEditPost] = useState(false);
   const [editPostTitle, setEditPostTitle] = useState("");
   const [editPostContent, setEditPostContent] = useState("");
+  const editTitleRef = useRef(null);
   const replyTextareaRefs = useRef({});
   const [summary, setSummary] = useState("");
   const [isSummarizing, setIsSummarizing] = useState(false);
@@ -51,6 +52,14 @@ const PostPage = ({ post, onBack, onAddComment, user, onDeletePost, onEditPost, 
     };
     refreshPost();
   }, [commentSort]);
+
+  // Focus the title input when entering edit mode
+  useEffect(() => {
+    if (showEditPost && editTitleRef.current) {
+      editTitleRef.current.focus();
+      editTitleRef.current.select && editTitleRef.current.select();
+    }
+  }, [showEditPost]);
 
   if (!currentPost) return <p>Loading post...</p>;
 
@@ -450,7 +459,7 @@ const PostPage = ({ post, onBack, onAddComment, user, onDeletePost, onEditPost, 
   };
 
   return (
-    <div className="post-page">
+    <div className={`post-page ${showEditPost ? "post-editing" : ""}`}>
       <button className="back-btn" onClick={onBack}>
         ← Back
       </button>
@@ -460,6 +469,7 @@ const PostPage = ({ post, onBack, onAddComment, user, onDeletePost, onEditPost, 
           {showEditPost ? (
             <div className="edit-post-form">
               <input
+                ref={editTitleRef}
                 type="text"
                 value={editPostTitle}
                 onChange={(e) => setEditPostTitle(e.target.value)}
