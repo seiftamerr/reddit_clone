@@ -1,5 +1,8 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+console.log("DEBUG ENV CHECK GEMINI:", process.env.GEMINI_API_KEY ? "YES" : "NO");
+
+import express from "express";
 import cors from "cors";
 import connectDB from "./config/db.js";
 
@@ -7,7 +10,7 @@ import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/posts.js";
 import communityRoutes from "./routes/communities.js";
 
-dotenv.config();
+console.log("DEBUG ENV CHECK:", process.env.GROQ_API_KEY ? "GROQ KEY LOADED" : "NO KEY");
 
 const app = express();
 
